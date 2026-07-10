@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NebulaClient — A Minecraft Launcher</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+  :root{
+    --void:#0a0714;
+    --space-900:#120e24;
+    --space-800:#1a1530;
+    --space-700:#251d42;
+    --line:#332a54;
+    --text:#eae6f7;
+    --text-dim:#a79fc4;
+    --nebula:#9d6bff;
+    --nebula-bright:#b98bff;
+    --magenta:#e561d8;
+    --cyan:#5ee6d9;
+  }
+
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    background:var(--void);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  .display{font-family:'Orbitron',sans-serif;}
+
+  /* starfield */
+  .stars, .stars2, .stars3{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+  }
+  .stars{background-image:radial-gradient(1px 1px at 20px 30px,#fff,transparent),
+      radial-gradient(1px 1px at 120px 80px,#fff,transparent),
+      radial-gradient(1px 1px at 200px 150px,#fff,transparent),
+      radial-gradient(1px 1px at 300px 40px,#fff,transparent),
+      radial-gradient(1px 1px at 400px 200px,#fff,transparent),
+      radial-gradient(1px 1px at 60px 250px,#fff,transparent),
+      radial-gradient(1px 1px at 500px 100px,#fff,transparent);
+    background-repeat:repeat; background-size:550px 550px; opacity:0.5;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background:radial-gradient(ellipse 800px 500px at 50% -10%, rgba(157,107,255,0.25), transparent 60%),
+               radial-gradient(ellipse 600px 400px at 90% 20%, rgba(229,97,216,0.12), transparent 60%);
+  }
+
+  header{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 48px;
+    background:rgba(10,7,20,0.8);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .logo{display:flex; align-items:center; gap:12px; font-weight:700; font-size:18px; letter-spacing:1px;}
+  .logo-mark{
+    width:26px;height:26px;
+    background:radial-gradient(circle at 35% 35%, var(--nebula-bright), var(--nebula) 60%, transparent 75%);
+    border-radius:50%;
+    box-shadow:0 0 14px var(--nebula);
+    position:relative;
+  }
+  .logo-mark::after{
+    content:""; position:absolute; top:2px; left:6px; width:10px; height:10px;
+    background:var(--void); border-radius:50%;
+  }
+  nav{display:flex; align-items:center; gap:28px;}
+  nav a{color:var(--text-dim); text-decoration:none; font-size:14px; transition:color .2s;}
+  nav a:hover{color:var(--text);}
+  .status{display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-dim);}
+  .status .dot{width:7px;height:7px;border-radius:50%;background:#5eeb8f; box-shadow:0 0 6px #5eeb8f;}
+  .nav-download{
+    background:linear-gradient(135deg,var(--nebula),var(--magenta));
+    color:#fff; border:none; padding:10px 20px; border-radius:6px;
+    font-weight:600; font-size:14px; text-decoration:none; cursor:pointer;
+  }
+
+  main{position:relative; z-index:1;}
+
+  /* HERO */
+  .hero{max-width:1120px; margin:0 auto; padding:100px 48px 60px; text-align:center;}
+  .eyebrow{
+    display:inline-block; font-size:11px; letter-spacing:2px; color:var(--cyan);
+    background:rgba(94,230,217,0.08); border:1px solid rgba(94,230,217,0.3);
+    padding:6px 14px; border-radius:20px; margin-bottom:28px;
+  }
+  h1{font-size:clamp(36px,6vw,60px); line-height:1.1; font-weight:800; letter-spacing:-0.5px; margin-bottom:22px;}
+  h1 span{
+    background:linear-gradient(135deg,var(--nebula-bright),var(--magenta));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .sub{font-size:18px; color:var(--text-dim); max-width:560px; margin:0 auto 40px; line-height:1.6;}
+
+  .cta-row{display:flex; justify-content:center; gap:14px; flex-wrap:wrap; margin-bottom:60px;}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--nebula),var(--magenta));
+    color:#fff; border:none; padding:15px 30px; border-radius:8px;
+    font-weight:600; font-size:15px; cursor:pointer; text-decoration:none;
+    box-shadow:0 8px 24px rgba(157,107,255,0.35);
+  }
+  .btn-secondary{
+    background:var(--space-800); color:var(--text); border:1px solid var(--line);
+    padding:15px 30px; border-radius:8px; font-weight:600; font-size:15px;
+    text-decoration:none; cursor:pointer;
+  }
+
+  /* APP MOCKUP */
+  .mockup{
+    max-width:1000px; margin:0 auto; border-radius:14px; overflow:hidden;
+    border:1px solid var(--line);
+    box-shadow:0 30px 80px rgba(0,0,0,0.5), 0 0 60px rgba(157,107,255,0.15);
+    background:var(--space-900);
+    text-align:left;
+  }
+  .mockup-bar{
+    display:flex; align-items:center; gap:8px; padding:10px 16px;
+    background:var(--space-800); border-bottom:1px solid var(--line); font-size:12px; color:var(--text-dim);
+  }
+  .mockup-bar .dot{width:9px;height:9px;border-radius:50%;}
+  .mockup-body{padding:40px; display:flex; align-items:center; justify-content:center; gap:40px; min-height:220px;
+    background:radial-gradient(ellipse at center, rgba(157,107,255,0.1), transparent 70%);}
+  .launch-btn{
+    background:linear-gradient(135deg,#5eeb8f,#33c26a); color:#04180c;
+    padding:16px 36px; border-radius:10px; font-weight:700; font-size:16px;
+    text-align:center; box-shadow:0 8px 20px rgba(94,235,143,0.3);
+  }
+  .launch-btn small{display:block; font-weight:500; font-size:12px; opacity:0.75; margin-top:2px;}
+  .orb{width:70px;height:70px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--nebula-bright), var(--nebula) 55%, transparent 75%);
+    box-shadow:0 0 30px var(--nebula);}
+
+  /* DOWNLOAD CARDS */
+  .download-section{max-width:1120px; margin:0 auto; padding:0 48px 100px;}
+  .section-title{text-align:center; font-size:28px; font-weight:700; margin-bottom:8px;}
+  .section-sub{text-align:center; color:var(--text-dim); margin-bottom:44px; font-size:15px;}
+  .os-cards{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  .os-card{
+    position:relative; border-radius:14px; overflow:hidden; padding:44px 24px;
+    text-align:center; border:1px solid var(--line);
+    background:linear-gradient(160deg, var(--space-800), var(--space-900));
+    transition:transform .2s, border-color .2s;
+  }
+  .os-card:hover{transform:translateY(-4px); border-color:var(--nebula);}
+  .os-card .glyph{font-size:38px; margin-bottom:18px;}
+  .os-card h3{font-size:18px; margin-bottom:6px; letter-spacing:1px;}
+  .os-card p{font-size:12px; color:var(--text-dim); margin-bottom:22px;}
+  .os-card .dl-btn{
+    display:inline-block; background:var(--space-700); border:1px solid var(--line);
+    color:var(--text); padding:10px 20px; border-radius:6px; text-decoration:none;
+    font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .os-card .dl-btn:hover{background:var(--nebula); border-color:var(--nebula);}
+  .os-card .dl-row{display:flex; gap:8px; justify-content:center;}
+
+  /* FEATURES */
+  .features{max-width:1120px; margin:0 auto 100px; padding:0 48px;
+    display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line);}
+  .feature{background:var(--void); padding:34px 30px;}
+  .feature .icon{width:34px;height:34px; margin-bottom:18px; background:var(--space-800); border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center; color:var(--magenta); font-size:16px; border-radius:8px;}
+  .feature h3{font-size:16px; margin-bottom:8px;}
+  .feature p{font-size:13.5px; color:var(--text-dim); line-height:1.6;}
+
+  /* MOD EXPLORER PREVIEW */
+  .explorer-section{max-width:1000px; margin:0 auto 100px; padding:0 48px;}
+  .explorer{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--space-900);}
+  .explorer-top{display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--line); gap:16px; flex-wrap:wrap;}
+  .tabs{display:flex; gap:6px; background:var(--space-800); padding:4px; border-radius:8px;}
+  .tab{padding:8px 16px; font-size:13px; border-radius:6px; cursor:pointer; color:var(--text-dim); user-select:none;}
+  .tab.active{background:var(--nebula); color:#fff;}
+  .source-toggle{display:flex; gap:6px; background:var(--space-800); padding:4px; border-radius:8px;}
+  .source-btn{padding:8px 14px; font-size:13px; border-radius:6px; cursor:pointer; color:var(--text-dim); user-select:none;}
+  .source-btn.active{background:var(--space-700); color:var(--cyan); box-shadow:inset 0 0 0 1px var(--cyan);}
+  .explorer-list{padding:8px;}
+  .mod-row{display:flex; align-items:center; gap:14px; padding:12px 12px; border-radius:8px;}
+  .mod-row:hover{background:var(--space-800);}
+  .mod-icon{width:40px;height:40px; border-radius:8px; background:linear-gradient(135deg,var(--nebula),var(--magenta)); flex-shrink:0;}
+  .mod-info{flex:1; min-width:0;}
+  .mod-info .name{font-size:14px; font-weight:600;}
+  .mod-info .desc{font-size:12.5px; color:var(--text-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .mod-meta{font-size:11.5px; color:var(--text-dim); white-space:nowrap;}
+  .install-btn{background:var(--space-700); border:1px solid var(--line); color:var(--text); font-size:12.5px;
+    padding:7px 14px; border-radius:6px; cursor:pointer; white-space:nowrap;}
+  .install-btn:hover{background:var(--nebula); border-color:var(--nebula);}
+  .version-note{font-size:12px; color:var(--text-dim); padding:12px 20px; border-top:1px solid var(--line);}
+  .version-note b{color:var(--cyan);}
+
+  /* FRIENDS PREVIEW */
+  .friends-section{max-width:1000px; margin:0 auto 100px; padding:0 48px;}
+  .friends-panel{border:1px solid var(--line); border-radius:14px; overflow:hidden; background:var(--space-900); display:grid; grid-template-columns:280px 1fr;}
+  .friends-side{border-right:1px solid var(--line); padding:16px;}
+  .add-friend{display:flex; gap:8px; margin-bottom:16px;}
+  .add-friend input{flex:1; background:var(--space-800); border:1px solid var(--line); border-radius:6px; color:var(--text); padding:9px 10px; font-size:13px; outline:none;}
+  .add-friend input:focus{border-color:var(--nebula);}
+  .add-friend button{background:var(--nebula); border:none; color:#fff; border-radius:6px; padding:0 14px; cursor:pointer; font-size:16px;}
+  .friend-item{display:flex; align-items:center; gap:10px; padding:9px 8px; border-radius:8px; font-size:13.5px;}
+  .friend-item:hover{background:var(--space-800);}
+  .friend-avatar{width:30px;height:30px;border-radius:6px; background:linear-gradient(135deg,var(--cyan),var(--nebula));}
+  .friend-status{width:7px;height:7px;border-radius:50%;background:#5eeb8f; margin-left:auto;}
+  .friend-status.away{background:#e3ac45;}
+  .friends-main{display:flex; align-items:center; justify-content:center; flex-direction:column; gap:10px; color:var(--text-dim); padding:40px;}
+  .friends-main .icon-big{width:56px;height:56px; border-radius:50%; background:var(--space-800); display:flex; align-items:center; justify-content:center; font-size:22px;}
+
+  /* CONSOLE */
+  .console-section{max-width:900px; margin:0 auto 100px; padding:0 48px;}
+  .console-window{background:var(--space-900); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  .console-bar{display:flex; align-items:center; gap:8px; padding:10px 16px; background:var(--space-800); border-bottom:1px solid var(--line); font-size:12px; color:var(--text-dim);}
+  .dot.r{background:#e0625a;} .dot.y{background:#e3ac45;} .dot.g{background:#5eeb8f;}
+  .console-body{padding:20px 24px; font-family:'Courier New',monospace; font-size:13px; line-height:1.8; color:#c6c1e0;}
+  .console-body .ok{color:#5eeb8f;} .console-body .warn{color:#e3ac45;} .console-body .info{color:var(--cyan);}
+
+  footer{border-top:1px solid var(--line); padding:32px 48px; text-align:center; color:var(--text-dim); font-size:13px;}
+
+  @media (max-width:800px){
+    .os-cards{grid-template-columns:1fr;}
+    .features{grid-template-columns:1fr;}
+    .friends-panel{grid-template-columns:1fr;}
+    .friends-side{border-right:none; border-bottom:1px solid var(--line);}
+    header{padding:14px 20px;}
+    nav{display:none;}
+    .hero{padding:60px 20px 40px;}
+    .mockup-body{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<header>
+  <div class="logo"><div class="logo-mark"></div>NEBULACLIENT</div>
+  <nav>
+    <a href="#download">Download</a>
+    <a href="#features">Features</a>
+    <a href="#mods">Mods</a>
+    <a href="#friends">Friends</a>
+    <div class="status"><span class="dot"></span>24,800 online</div>
+  </nav>
+  <a href="#download" class="nav-download">Download</a>
+</header>
+
+<main>
+
+  <section class="hero">
+    <div class="eyebrow">OPEN BETA</div>
+    <h1>Your whole Minecraft<br>world, in <span>one orbit</span>.</h1>
+    <p class="sub">
+      Every version, every mod, every friend — in one launcher.
+      Sign in with Microsoft and go.
+    </p>
+    <div class="cta-row">
+      <a href="#download" class="btn-primary">Download NebulaClient</a>
+      <a href="#features" class="btn-secondary">See what's inside</a>
+    </div>
+
+    <div class="mockup">
+      <div class="mockup-bar">
+        <span class="dot r" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#e0625a;"></span>
+        <span class="dot y" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#e3ac45;"></span>
+        <span class="dot g" style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#5eeb8f;"></span>
+        <span style="margin-left:8px;">NebulaClient — Launchpad</span>
+      </div>
+      <div class="mockup-body">
+        <div class="orb"></div>
+        <div class="launch-btn">LAUNCH GAME<small>NebulaClient 1.21.11 · Fabric</small></div>
+        <div class="orb" style="opacity:0.5;"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="download-section" id="download">
+    <div class="section-title">Pick your planet</div>
+    <div class="section-sub">Available for Windows, macOS, and Linux.</div>
+    <div class="os-cards">
+      <div class="os-card">
+        <div class="glyph">🪟</div>
+        <h3>WINDOWS</h3>
+        <p>Supports Windows 10 and above</p>
+        <a href="#" class="dl-btn" data-os="windows">↓ Download .exe</a>
+      </div>
+      <div class="os-card">
+        <div class="glyph">🍎</div>
+        <h3>MACOS</h3>
+        <p>Supports macOS Sonoma and above</p>
+        <div class="dl-row">
+          <a href="#" class="dl-btn" data-os="macos-intel">Intel</a>
+          <a href="#" class="dl-btn" data-os="macos-arm">Apple Silicon</a>
+        </div>
+      </div>
+      <div class="os-card">
+        <div class="glyph">🐧</div>
+        <h3>LINUX</h3>
+        <p>Distributed as an AppImage</p>
+        <a href="#" class="dl-btn" data-os="linux">↓ Download .AppImage</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="feature"><div class="icon">◐</div><h3>Version folders</h3><p>Instances grouped by major release — 1.21.x, 1.20.x, 1.12.x — so old modpacks never collide with new snapshots.</p></div>
+    <div class="feature"><div class="icon">✧</div><h3>Modrinth &amp; CurseForge</h3><p>Search both catalogs from one place, switch between mods, resource packs, and modpacks in a click.</p></div>
+    <div class="feature"><div class="icon">⬢</div><h3>One-click installs</h3><p>Only versions compatible with your instance's loader and Minecraft version are ever shown.</p></div>
+    <div class="feature"><div class="icon">☾</div><h3>Microsoft sign-in</h3><p>Link your account once. Your skin, cape, and profile show up exactly as they do in-game.</p></div>
+    <div class="feature"><div class="icon">✦</div><h3>Friends list</h3><p>Add friends by username, see who's online, and jump into the same instance together.</p></div>
+    <div class="feature"><div class="icon">▤</div><h3>Live console + crash help</h3><p>Every launch streams a real console. If it crashes, the log gets scanned and paired with a likely fix.</p></div>
+  </section>
+
+  <section class="explorer-section" id="mods">
+    <div class="section-title">Browse without leaving the launcher</div>
+    <div class="section-sub">Toggle the source, pick a content type — only compatible versions show up.</div>
+    <div class="explorer">
+      <div class="explorer-top">
+        <div class="tabs">
+          <div class="tab active" data-tab="mods">Mods</div>
+          <div class="tab" data-tab="resourcepacks">Resource Packs</div>
+          <div class="tab" data-tab="modpacks">Modpacks</div>
+        </div>
+        <div class="source-toggle">
+          <div class="source-btn active" data-src="modrinth">Modrinth</div>
+          <div class="source-btn" data-src="curseforge">CurseForge</div>
+        </div>
+      </div>
+      <div class="explorer-list" id="explorer-list"></div>
+      <div class="version-note">Showing builds compatible with <b>Minecraft 1.21.11 · Fabric</b></div>
+    </div>
+  </section>
+
+  <section class="friends-section" id="friends">
+    <div class="section-title">Play with your crew</div>
+    <div class="section-sub">Add a friend by their username. See who's online before you launch.</div>
+    <div class="friends-panel">
+      <div class="friends-side">
+        <div class="add-friend">
+          <input type="text" placeholder="Add friend by username…" id="friend-input">
+          <button id="add-friend-btn">+</button>
+        </div>
+        <div id="friend-list">
+          <div class="friend-item"><div class="friend-avatar"></div>Astro_Kay<div class="friend-status"></div></div>
+          <div class="friend-item"><div class="friend-avatar"></div>Figgy_1234<div class="friend-status"></div></div>
+          <div class="friend-item"><div class="friend-avatar"></div>voidwalker<div class="friend-status away"></div></div>
+        </div>
+      </div>
+      <div class="friends-main">
+        <div class="icon-big">💬</div>
+        Select a friend to start chatting or invite them to your world.
+      </div>
+    </div>
+  </section>
+
+  <section class="console-section">
+    <div class="section-title">See exactly what's happening</div>
+    <div class="section-sub">Every launch, every mod load, every error — logged live.</div>
+    <div class="console-window">
+      <div class="console-bar">
+        <span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#e0625a;"></span>
+        <span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#e3ac45;"></span>
+        <span style="width:9px;height:9px;border-radius:50%;display:inline-block;background:#5eeb8f;"></span>
+        <span style="margin-left:8px;">launch-log — 1.21.11 (Fabric)</span>
+      </div>
+      <div class="console-body">
+        <div><span class="info">[19:02:01]</span> Checking Java runtime… <span class="ok">found 21.0.3</span></div>
+        <div><span class="info">[19:02:02]</span> Verifying instance files… <span class="ok">up to date</span></div>
+        <div><span class="info">[19:02:03]</span> Loading 41 mods…</div>
+        <div><span class="warn">[19:02:06]</span> sodium-fabric expects loader ≥0.15.0, found 0.14.2</div>
+        <div><span class="info">[19:02:06]</span> Suggested fix: update Fabric Loader to 0.15.11 →</div>
+        <div><span class="ok">[19:02:09]</span> World "hillside-base" ready to load</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>NebulaClient — a fan-made tool. Not affiliated with Mojang or Microsoft.</footer>
+
+<script>
+  // ---- OS-aware primary download label ----
+  function detectOS(){
+    const p = navigator.userAgent.toLowerCase();
+    if(p.includes('mac')) return 'macos';
+    if(p.includes('linux') || p.includes('x11')) return 'linux';
+    return 'windows';
+  }
+  document.addEventListener('DOMContentLoaded', ()=>{
+    const os = detectOS();
+    const card = document.querySelector(`.os-card [data-os="${os}"]`)?.closest('.os-card');
+    if(card) card.style.borderColor = 'var(--nebula)';
+  });
+
+  // ---- Mod explorer mock data ----
+  const sampleData = {
+    modrinth: {
+      mods: [
+        {name:'Fabric API', desc:'Core hooks and compatibility layer for Fabric mods.', dl:'201.6M', ver:'0.100.8'},
+        {name:'Sodium', desc:'High-performance rendering engine replacement.', dl:'182.4M', ver:'0.5.11'},
+        {name:'Iris Shaders', desc:'Modern shader pack loader, OptiFine-shader compatible.', dl:'142.0M', ver:'1.7.2'},
+        {name:'Lithium', desc:'General-purpose optimization mod, no gameplay changes.', dl:'98.2M', ver:'0.13.0'},
+      ],
+      resourcepacks: [
+        {name:'Faithful 32x', desc:'A faithful upgrade of the default textures.', dl:'54.1M', ver:'1.21.x'},
+        {name:'Vanilla Tweaks', desc:'Small, focused visual tweaks to vanilla assets.', dl:'40.3M', ver:'1.21.x'},
+      ],
+      modpacks: [
+        {name:'Fabulously Optimized', desc:'Performance and QoL mods, kept vanilla-plus.', dl:'12.8M', ver:'1.21.x'},
+        {name:'Create: Above and Beyond', desc:'Tech-focused progression modpack.', dl:'6.4M', ver:'1.20.1'},
+      ]
+    },
+    curseforge: {
+      mods: [
+        {name:'JEI', desc:'Just Enough Items — recipe and item viewer.', dl:'310.2M', ver:'19.21.0'},
+        {name:'Applied Energistics 2', desc:'Digital storage and automation mod.', dl:'88.5M', ver:'19.1.5'},
+        {name:'Waystones', desc:'Teleport between claimed waystones.', dl:'75.9M', ver:'14.1.10'},
+      ],
+      resourcepacks: [
+        {name:'Default 3D', desc:'Adds subtle 3D depth to vanilla blocks.', dl:'20.6M', ver:'1.20.x'},
+      ],
+      modpacks: [
+        {name:'All the Mods 10', desc:'Kitchen-sink modpack with 400+ mods.', dl:'22.1M', ver:'1.21.1'},
+      ]
+    }
+  };
+
+  let currentTab = 'mods';
+  let currentSrc = 'modrinth';
+
+  function renderList(){
+    const list = document.getElementById('explorer-list');
+    const items = sampleData[currentSrc][currentTab] || [];
+    list.innerHTML = items.map(m => `
+      <div class="mod-row">
+        <div class="mod-icon"></div>
+        <div class="mod-info">
+          <div class="name">${m.name}</div>
+          <div class="desc">${m.desc}</div>
+        </div>
+        <div class="mod-meta">${m.dl} downloads · ${m.ver}</div>
+        <div class="install-btn">Install</div>
+      </div>
+    `).join('');
+  }
+
+  document.querySelectorAll('.tab').forEach(t=>{
+    t.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      currentTab = t.dataset.tab;
+      renderList();
+    });
+  });
+  document.querySelectorAll('.source-btn').forEach(s=>{
+    s.addEventListener('click', ()=>{
+      document.querySelectorAll('.source-btn').forEach(x=>x.classList.remove('active'));
+      s.classList.add('active');
+      currentSrc = s.dataset.src;
+      renderList();
+    });
+  });
+  renderList();
+
+  // ---- Friend list (front-end only demo) ----
+  document.getElementById('add-friend-btn').addEventListener('click', addFriend);
+  document.getElementById('friend-input').addEventListener('keydown', e=>{ if(e.key==='Enter') addFriend(); });
+  function addFriend(){
+    const input = document.getElementById('friend-input');
+    const name = input.value.trim();
+    if(!name) return;
+    const list = document.getElementById('friend-list');
+    const row = document.createElement('div');
+    row.className = 'friend-item';
+    row.innerHTML = `<div class="friend-avatar"></div>${name}<div class="friend-status away"></div>`;
+    list.appendChild(row);
+    input.value = '';
+  }
+</script>
+</body>
+</html>
