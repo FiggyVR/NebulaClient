@@ -161,16 +161,6 @@
 
   footer{border-top:1px solid var(--line); padding:32px 48px; text-align:center; color:var(--text-dim); font-size:13px;}
 
-  .toast{
-    position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px);
-    background:var(--space-800); border:1px solid var(--line); color:var(--text);
-    padding:14px 20px; border-radius:10px; font-size:14px; max-width:340px;
-    box-shadow:0 12px 30px rgba(0,0,0,0.5); z-index:100;
-    opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
-  }
-  .toast.show{opacity:1; transform:translate(-50%,0);}
-  .toast b{color:var(--nebula-bright);}
-
   @media (max-width:800px){
     .os-cards{grid-template-columns:1fr;}
     .features{grid-template-columns:1fr;}
@@ -191,7 +181,7 @@
     <a href="#features">Features</a>
     <a href="#tag">In-game tag</a>
   </nav>
-  <a href="#download" class="nav-download" id="nav-download">Download</a>
+  <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="nav-download" id="nav-download">Download</a>
 </header>
 
 <main>
@@ -204,7 +194,7 @@
       to squeeze more FPS out of the game you already own.
     </p>
     <div class="cta-row">
-      <a href="#download" class="btn-primary">Download NebulaClient</a>
+      <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="btn-primary">Download NebulaClient</a>
       <a href="#features" class="btn-secondary">See what's inside</a>
     </div>
 
@@ -231,22 +221,22 @@
         <div class="glyph">🪟</div>
         <h3>WINDOWS</h3>
         <p>Supports Windows 10 and above</p>
-        <a href="#" class="dl-btn" data-os="windows">↓ Download .exe</a>
+        <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="dl-btn" data-os="windows">↓ Download .exe</a>
       </div>
       <div class="os-card">
         <div class="glyph">🍎</div>
         <h3>MACOS</h3>
         <p>Supports macOS Sonoma and above</p>
         <div class="dl-row">
-          <a href="#" class="dl-btn" data-os="macos-intel">Intel</a>
-          <a href="#" class="dl-btn" data-os="macos-arm">Apple Silicon</a>
+          <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="dl-btn" data-os="macos-intel">Intel</a>
+          <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="dl-btn" data-os="macos-arm">Apple Silicon</a>
         </div>
       </div>
       <div class="os-card">
         <div class="glyph">🐧</div>
         <h3>LINUX</h3>
         <p>Distributed as an AppImage</p>
-        <a href="#" class="dl-btn" data-os="linux">↓ Download .AppImage</a>
+        <a href="https://github.com/FiggyVR/nebulaclient-launcher/releases/latest" class="dl-btn" data-os="linux">↓ Download .AppImage</a>
       </div>
     </div>
   </section>
@@ -307,8 +297,6 @@
 
 <footer>NebulaClient — a fan-made tool. Not affiliated with Mojang or Microsoft.</footer>
 
-<div id="toast" class="toast"></div>
-
 <script>
   function detectOS(){
     const p = navigator.userAgent.toLowerCase();
@@ -321,21 +309,6 @@
     const selector = os === 'macos' ? '[data-os^="macos"]' : `[data-os="${os}"]`;
     const card = document.querySelector(`.os-card ${selector}`)?.closest('.os-card');
     if(card) card.style.borderColor = 'var(--nebula)';
-  });
-
-  let toastTimer;
-  function showToast(msg){
-    const toast = document.getElementById('toast');
-    toast.innerHTML = msg;
-    toast.classList.add('show');
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> toast.classList.remove('show'), 4200);
-  }
-  document.querySelectorAll('#nav-download, .btn-primary, .os-card .dl-btn').forEach(btn=>{
-    btn.addEventListener('click', e=>{
-      e.preventDefault();
-      showToast('<b>No installer yet.</b><br>NebulaClient is still in development — nothing is built or hosted to download.');
-    });
   });
 </script>
 </body>
